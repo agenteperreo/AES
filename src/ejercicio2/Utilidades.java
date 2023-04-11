@@ -5,6 +5,7 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.*;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
@@ -13,18 +14,21 @@ import java.util.Base64;
 public class Utilidades {
 
     static final int LONGITUD_BLOQUE = 16;
-    public Key obtenerClave(String contraseña) {
+
+    static final String ALGORITMO ="AES/ECB/PKCS5Padding";
+
+    public static Key obtenerClave(String contraseña) {
 
         Key clave = new SecretKeySpec(contraseña.getBytes(),0, LONGITUD_BLOQUE, "AES");
 
         return clave;
     }
 
-    public String cifrado(String mensaje, String algoritmo, String contraseña) {
+    public static String cifrado(String mensaje, String contraseña) {
 
         byte[] cypherText = null;
         try {
-            Cipher cipher = Cipher.getInstance(algoritmo);
+            Cipher cipher = Cipher.getInstance(ALGORITMO);
 
             cipher.init(Cipher.ENCRYPT_MODE, obtenerClave(contraseña));
 
@@ -48,14 +52,20 @@ public class Utilidades {
         return (Base64.getEncoder().encodeToString(cypherText));
     }
 
-    public String descifrado(String mensaje, String algoritmo, String contraseña) {
+    public static String descifrado(String mensaje, String contraseña) {
         byte[] plainText = null;
+
+        String mensajeDescifrado = "";
+
         try {
-            Cipher cipher = Cipher.getInstance(algoritmo);
+            Cipher cipher = Cipher.getInstance(ALGORITMO);
 
             cipher.init(Cipher.DECRYPT_MODE, obtenerClave(contraseña));
 
             plainText = cipher.doFinal(Base64.getDecoder().decode(mensaje));
+
+            mensajeDescifrado = new String(plainText);
+
         } catch (NoSuchAlgorithmException e) {
             System.err.println("ERROR: El algoritmo no existe");
             e.printStackTrace();
@@ -72,6 +82,40 @@ public class Utilidades {
             e.printStackTrace();
         }
 
-        return "ksjhois";
+        return mensajeDescifrado;
+    }
+
+    public static void guardarTextoCifrado(String texto, String clave){
+        try {
+            BufferedWriter bw = new BufferedWriter(new FileWriter("src/ejercicio2/mensajeEncryptado"));
+            bw.write(cifrado(texto, clave));
+            bw.newLine();
+            bw.close();
+        } catch (IOException e) {
+            System.err.println("No se ha podido guardar el texto");
+            e.printStackTrace();
+        }
+    }
+
+    public static String leerTextCifrado(String clave) {
+
+        //Creamos la variable que va a contener el texto cifrado y la inicializamos a null
+        String textoCifrado = null;
+
+        try {
+            //Leemos las lineas del texto cifrado del fichero que almacena el texto cifrado y lo guardamos en la variable creada anteriormente
+            BufferedReader br = new BufferedReader(new FileReader("src/ejercicio2/mensajeEncryptado"));
+            textoCifrado = br.readLine();
+            br.close();
+
+            //Control de excepciones
+        } catch (IOException e) {
+            System.err.println("No se ha podido recuperar el texto");
+            e.printStackTrace();
+        }
+
+        //Devolvemos el codigo descifradocon el mtodo descifrar de la clase maquina enigma y como parametros el tesxto cifrado
+        // y la clave que obtengo de otro metodo en la clase maquina enigma
+        return descifrado(textoCifrado, clave);
     }
 }
