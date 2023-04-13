@@ -16,7 +16,7 @@ public class Recibo {
         //Desciframos el mensaje del fichero y mostramos
         System.out.println("El mensaje es: "+Utilidades.leerTextCifrado(clave));
 
-        //Cerramos el esaner
+        //Cerramos el escaner
         sc.close();
     }
 
